@@ -1,0 +1,37 @@
+[romusha]
+version = "0.1"
+
+
+[[service]]
+name = "RTSP Server"
+# https://github.com/aler9/rtsp-simple-server
+exec = "/tmp/rtsp-simple-server"
+cwd = "/tmp"
+env = { "RTSP_PROTOCOLS" = "tcp" }
+
+
+[[service]]
+name = "Test Bars"
+exec = "/usr/bin/ffmpeg"
+args = [
+    "-re",
+    "-f",
+    "lavfi",
+    "-i",
+    "testsrc=size=1280x720:rate=30",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-rtpflags",
+    "latm",
+    "-f",
+    "rtsp",
+    "rtsp://localhost:8554/test",
+]
+
+
+[[service]]
+name = "Testing - this won't run because enabled = false"
+enabled = false
+exec = "/some/test"
