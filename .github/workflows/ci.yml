@@ -1,0 +1,61 @@
+name: build
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        target:
+        - x86_64-pc-windows-gnu
+        - x86_64-unknown-linux-musl
+        - aarch64-unknown-linux-musl
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Cache rust dependencies
+      id: cache-dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.target }}
+
+    - name: Cache node_modules
+      id: cache-node
+      uses: actions/cache@v2
+      with:
+        path: |
+          web/node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}-${{ matrix.target }}
+
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: ${{ matrix.target }}
+        override: true
+
+    - name: Build romusha
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: build
+        args: --release --locked --target ${{ matrix.target }}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.target }}
+        path: |
+          target/**/release/romusha*
+          !target/**/release/romusha.d

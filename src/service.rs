@@ -18,9 +18,9 @@ impl config::ServiceConfig {
             // TODO: do something with stdout/stderr
             let child = Command::new(&self.exec)
                 .args(&self.args)
-                .stdin(Stdio::null())
                 .envs(&self.env)
                 .current_dir(self.cwd.clone().unwrap_or(".".into()))
+                .stdin(Stdio::null())
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .spawn();
